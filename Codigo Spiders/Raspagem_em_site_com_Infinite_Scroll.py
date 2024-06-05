@@ -1,21 +1,21 @@
-# -*- coding: utf-8 -*-
 import scrapy
 import json
 
 class InfiniteScrollSpider(scrapy.Spider):
     name = 'infinite_scroll'
-    allowed_domains = ['quote.com']
+    allowed_domains = ['quotes.toscrape.com']
     start_urls = ['http://quotes.toscrape.com/api/quotes?page=1']
+    api_url = 'http://quotes.toscrape.com/api/quotes?page={}'
 
     def parse(self, response):
-        dados = json.loads(response.text)
-        for frase in dados['quotes']:
+        data = json.loads(response.text)
+        for quote in data.get('quotes', []):
             yield {
-                'name_author': frase['author']['name'],
-                'texto': frase['text'],
-                'categorias': frase['tags'],
+                'author_name': quote['author']['name'],
+                'text': quote['text'],
+                'tags': quote['tags'],
             }
 
-        if dados['has_next']:
-            proxima_pag = dados['page'] + 1
-            yield scrapy.Request(url=self.api_url.format(proxima_pag), callback=self.parse)
+        if data.get('has_next'):
+            next_page = data['page'] + 1
+            yield scrapy.Request(url=self.api_url.format(next_page), callback=self.parse)

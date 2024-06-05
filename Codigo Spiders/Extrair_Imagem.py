@@ -2,14 +2,20 @@ import requests
 import urllib.request
 from bs4 import BeautifulSoup
 
-# Estabelecendo conexão com o servidor da página e puxando o conteúdo.
-response = requests.get('https://github.com/')
-content = response.content
-site_html = BeautifulSoup(content, 'html.parser')
+try:
+    response = requests.get('https://github.com/')
+    response.raise_for_status()
+    content = response.content
+    site_html = BeautifulSoup(content, 'html.parser')
 
-# Encontrando o elemento desejado.
-img = site_html.find('img', attrs={'class':'width-full height-auto js-globe-fallback-image'})
-link = img.attrs['src']
+    img = site_html.find('img', attrs={'class': 'width-full height-auto js-globe-fallback-image'})
+    if img:
+        link = img.attrs['src']
 
-# Realizando o download a partir do img src.
-urllib.request.urlretrieve(f'{link}', 'img.png')
+        urllib.request.urlretrieve(f'{link}', 'img.png')
+    else:
+        print("Imagem não encontrada.")
+except requests.exceptions.RequestException as e:
+    print(f"Erro ao fazer a requisição: {e}")
+except Exception as e:
+    print(f"Erro inesperado: {e}")
